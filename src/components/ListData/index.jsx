@@ -1,18 +1,39 @@
 import React, {useEffect, useState} from 'react'
 import DataTable from 'react-data-table-component';
 import axios from "axios";
+import {Export, Pesquisar} from "./styles";
+import {
+    FaPencilAlt,
+    FaTrashAlt
+}from "react-icons/fa";
 
 const ListData = () =>{
     const [clientes, setClientes] = useState([]);
+    const [search, setSearch] = useState('');
+    const [filtroClientes, setFiltroClientes] = useState([]);
+
+
 
     const getClientes = async () =>{
         try {
             const response = await axios.get('http://localhost:8080/api/clientes')
             setClientes(response.data);
+            setFiltroClientes(response.data);
         } catch (error){
             console.log(error);
         }
     }
+
+    useEffect(() => {
+        getClientes();
+    }, [])
+
+    useEffect(() => {
+        const result = clientes.filter(clientes => {
+            return clientes.nome.toLowerCase().match(search.toLowerCase());
+        });
+        setFiltroClientes(result);
+    }, [search])
 
     const columns = [
         {
@@ -21,7 +42,8 @@ const ListData = () =>{
         },
         {
             name: 'nome',
-            selector: row => row.nome
+            selector: row => row.nome,
+            sortable: true
         },
         {
             name: 'captania',
@@ -52,49 +74,43 @@ const ListData = () =>{
             selector: row => row.banco
         },
         {
-            name: 'dataReceb',
-            selector: row => row.dataReceb
+            name: 'Editar',
+            cell: (row) =>(
+                <FaPencilAlt size={20} color={"#3e8df4"} onClick={() => alert(row.id)}>Editar</FaPencilAlt>
+            )
         },
         {
-            name: 'caixaRecebido',
-            selector: row => row.caixaRecebido
-        },
-        {
-            name: 'valorServico',
-            selector: row => row.valorServico
-        },
-        {
-            name: 'recebibo',
-            selector: row => row.recebibo
-        },
-        {
-            name: 'areceber',
-            selector: row => row.areceber
-        },
-        {
-            name: 'situacaoPagamento',
-            selector: row => row.situacaoPagamento
-        },
-        {
-            name: 'gru',
-            selector: row => row.gru
-        },
-        {
-            name: 'valorLiquido',
-            selector: row => row.valorLiquido
-        },
-        {
-            name: 'dataCadastro',
-            selector: row => row.dataCadastro
+            name: 'Deletar',
+            cell: (row) =>(
+                <FaTrashAlt size={20} color={"#f4796b"} onClick={() => alert(row.id)}>Deletar</FaTrashAlt>
+            )
         },
     ]
 
-    useEffect(() => {
-        getClientes();
-    }, [])
-
     return (
-        <DataTable title='Lista de clientes' columns={columns} data={clientes} pagination/>
+        <DataTable
+            title='Lista de clientes'
+            columns={columns}
+            data={filtroClientes}
+            pagination={true}
+            fixedHeader
+            striped
+            highlightOnHover
+            pointerOnHover
+            actions={<Export>Export</Export>}
+            subHeader
+            subHeaderComponent={
+                <>
+                <Pesquisar
+                    type="text"
+                    placeholder='Pesquisar'
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+                {/*<button>Teste</button>*/}
+                </>
+            }
+        />
     );
 }
 
