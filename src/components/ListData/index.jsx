@@ -30,7 +30,7 @@ const ListData = () =>{
 
     useEffect(() => {
         const result = clientes.filter(clientes => {
-            return clientes.nome.toLowerCase().match(search.toLowerCase());
+            return clientes.nome.toLowerCase().match(search.toLowerCase()) || clientes.captania.toLowerCase().match(search.toLowerCase());
         });
         setFiltroClientes(result);
     }, [search])
